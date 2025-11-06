@@ -6,8 +6,8 @@ import sys
 def is_input(line):
     """
     Determines whether or not a read in line contains an uncommented out
-    \input{} statement. Allows only spaces between start of line and
-    '\input{}'.
+    \\input{} statement. Allows only spaces between start of line and
+    '\\input{}'.
     """
     #tex_input_re = r"""^\s*\\input{[^}]*}""" # input only
     tex_input_re = r"""(^[^\%]*\\input{[^}]*})|(^[^\%]*\\include{[^}]*})"""  # input or include
@@ -92,7 +92,7 @@ def bbl_file(start_base_file):
 def main(base_file, output_file, include_bbl=False, noline=False, nocomment=False, no_image_path=False):
     
     """
-    This "flattens" a LaTeX document by replacing all \input{X} lines w/ the
+    This "flattens" a LaTeX document by replacing all \\input{X} lines w/ the
     text actually contained in X. See associated README.md for details.
     """
     current_path = os.path.split(base_file)[0]
