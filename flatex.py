@@ -76,9 +76,11 @@ def expand_file(start_base_file,
     f.close()
     return output_lines
 
+
+
 def remove_image_path(line):
-    pattern = r"{.*/([a-zA-Z].*)}"  # Capture filename between last / and }
-    new_line = re.sub(pattern, r"{\1}", line)
+    pattern = r'(\\includegraphics(?:\[.*?\])?{).*?/([a-zA-Z0-9].*?)}'
+    new_line = re.sub(pattern,  r'\1\2}', line)
     return new_line
 
 
