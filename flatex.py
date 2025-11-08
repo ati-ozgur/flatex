@@ -93,7 +93,7 @@ def bbl_file(start_base_file):
 @click.command()
 @click.argument('base_file', type = click.Path(exists=True))
 @click.argument('output_file', type = click.Path(exists=False))
-@click.argument('output_directory', type = click.Path(exists=True))
+@click.option('--output_directory', type = click.Path(exists=True),default="temp")
 @click.option('--include_bbl/--no_bbl', default=False)
 @click.option("--noline", is_flag = True)
 @click.option("--nocomment", is_flag = True
