@@ -124,7 +124,8 @@ def main(base_file,
 def save_image_file(output_directory, line):
     if output_directory is None:
         return
-    match = re.search(r'\\includegraphics\{(.*?)\}', line)
+    pattern = r'\\includegraphics(?:\[.*?\])?{(.*?)}'    
+    match = re.search(pattern, line)
     if match:
         # The captured group (the file path) is at index 1
         file_path = match.group(1)
