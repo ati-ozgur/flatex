@@ -121,6 +121,31 @@ def main(base_file,
         nocomment,
         no_image_path)
 
+def resolve_image_path(base_path: str) -> str | None:
+    """
+    Checks if the base_path exists. If not, it appends common image extensions 
+    one by one and returns the first path that exists.
+    
+    Args:
+        base_path: The path extracted from the LaTeX command (e.g., 'folder/logo').
+        
+    Returns:
+        The full path to the existing file, or None if none of the paths exist.
+    """
+    extensions = ['.pdf', '.png', '.jpg', '.jpeg'] 
+    
+    # 1. Check if the path as is (maybe it already has an extension) exists
+    if os.path.exists(base_path):
+        return base_path
+    
+    # 2. Iterate through the defined extensions
+    for ext in extensions:
+        potential_path = base_path + ext
+        if os.path.exists(potential_path):
+            # Found it! Return the complete path
+            return potential_path
+    return None
+
 def save_image_file(output_directory, line):
     if output_directory is None:
         return
@@ -130,9 +155,13 @@ def save_image_file(output_directory, line):
         # The captured group (the file path) is at index 1
         file_path = match.group(1)
         try:
+            resolved_path = resolve_image_path(file_path)
+            if resolved_path is None:
+                print(f"❌ Error: Could not find the image file for '{file_path}'.")
+                return
             # Copy the file
-            shutil.copy(file_path, output_directory)
-            print(f"image file: {file_path} copied to {output_directory}")
+            shutil.copy(resolved_path, output_directory)
+            print(f"image file: {resolved_path} copied to {output_directory}")
         except FileNotFoundError:
             print(f"❌ Error: The source file '{file_path}' was not found.")
         except Exception as e:
