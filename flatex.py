@@ -110,6 +110,29 @@ def main(base_file,
         nocomment,
         no_image_path)
 
+def save_image_file(output_directory, file_path):
+    destination_path = os.path.join(output_directory, os.path.basename(file_path))
+
+    try:
+        # Copy the file
+        shutil.copy(file_path, output_directory)
+    except FileNotFoundError:
+        print(f"❌ Error: The source file '{file_path}' was not found.")
+    except Exception as e:
+        print(f"❌ An error occurred during copying: {e}")
+    print(f"The extracted file path is: {file_path}")
+
+def save_images(output_directory, lines):
+    for line in lines:
+        if "includegraphics" not in line:
+            continue
+        match = re.search(r'\\includegraphics\{(.*?)\}', line)
+        if match:
+            # The captured group (the file path) is at index 1
+            file_path = match.group(1)
+            save_image_file(output_directory, file_path)    
+        else:
+            print("Could not find the expected pattern.")
 
 
 def _main(base_file, 
