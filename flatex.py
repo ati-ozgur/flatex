@@ -80,8 +80,9 @@ def bbl_file(start_base_file):
 
 
 @click.command()
-@click.argument('base_file', type = click.Path())
-@click.argument('output_file', type = click.Path())
+@click.argument('base_file', type = click.Path(exists=True))
+@click.argument('output_file', type = click.Path(exists=False))
+@click.argument('output_directory', type = click.Path(exists=True))
 @click.option('--include_bbl/--no_bbl', default=False)
 @click.option("--noline", is_flag = True)
 @click.option("--nocomment", is_flag = True
@@ -89,12 +90,39 @@ def bbl_file(start_base_file):
                     (this will preserve comments"
                         "at the same line as the text)""")
 @click.option("--no_image_path", is_flag = True)
-def main(base_file, output_file, include_bbl=False, noline=False, nocomment=False, no_image_path=False):
+def main(base_file, 
+         output_file, 
+         output_directory=None, 
+         include_bbl=False, 
+         noline=False, 
+         nocomment=False, 
+         no_image_path=False):
     
     """
     This "flattens" a LaTeX document by replacing all \\input{X} lines w/ the
     text actually contained in X. See associated README.md for details.
     """
+    _main(base_file, 
+        output_file, 
+        output_directory, 
+        include_bbl,
+        noline,
+        nocomment,
+        no_image_path)
+
+
+
+def _main(base_file, 
+         output_file, 
+         output_directory=None, 
+         include_bbl=False, 
+         noline=False, 
+         nocomment=False, 
+         no_image_path=False):
+    
+    if output_directory is not None:
+        output_file = os.path.join(output_directory, output_file)
+
     current_path = os.path.split(base_file)[0]
     g = open(output_file, "w", encoding='utf-8')
     lines = expand_file(base_file, base_file, current_path, include_bbl,
@@ -103,6 +131,12 @@ def main(base_file, output_file, include_bbl=False, noline=False, nocomment=Fals
     g.write(content)
     g.close()
     return None
+    
 
+if __name__ == "__main__":
+    base_file = "/home/atilla/Projects/my-repos/latex-article-template/main.tex"
+    output_file = "output.tex"
+    output_directory = "/home/atilla/Projects/my-repos/latex-article-template/temp/"
+    _main(base_file,output_file,output_directory)
 
 
