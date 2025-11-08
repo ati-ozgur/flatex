@@ -2,6 +2,8 @@ import click
 import os
 import re
 import sys
+import shutil
+
 
 def is_input(line):
     """
@@ -38,7 +40,15 @@ def combine_path(base_path, relative_ref):
 
 
 
-def expand_file(start_base_file, base_file, current_path, include_bbl, noline, nocomment,no_image_path):
+def expand_file(start_base_file, 
+                base_file, 
+                current_path, 
+                include_bbl, 
+                noline, 
+                nocomment,
+                no_image_path,
+                output_directory
+                ):
     """
     Recursively-defined function that takes as input a file and returns it
     with all the inputs replaced with the contents of the referenced file.
@@ -48,7 +58,7 @@ def expand_file(start_base_file, base_file, current_path, include_bbl, noline, n
     for line in f:
         if is_input(line):
             new_base_file = combine_path(current_path, get_input(line))
-            output_lines += expand_file(start_base_file, new_base_file, current_path, include_bbl, noline, nocomment,no_image_path)
+            output_lines += expand_file(start_base_file, new_base_file, current_path, include_bbl, noline, nocomment,no_image_path,output_directory)
             if noline:
                 pass
             else:
@@ -57,9 +67,10 @@ def expand_file(start_base_file, base_file, current_path, include_bbl, noline, n
             output_lines += bbl_file(start_base_file)
         elif nocomment and len(line.lstrip()) > 0 and line.lstrip()[0] == "%":
             pass
-        elif no_image_path and "includegraphics" in line:
+        elif (output_directory or no_image_path) and "includegraphics" in line:
             new_line = remove_image_path(line)
             output_lines.append(new_line)
+            save_image_file(output_directory, line) 
         else:
             output_lines.append(line)
     f.close()
@@ -110,29 +121,27 @@ def main(base_file,
         nocomment,
         no_image_path)
 
-def save_image_file(output_directory, file_path):
-    destination_path = os.path.join(output_directory, os.path.basename(file_path))
+def save_image_file(output_directory, line):
+    if output_directory is None:
+        return
+    match = re.search(r'\\includegraphics\{(.*?)\}', line)
+    if match:
+        # The captured group (the file path) is at index 1
+        file_path = match.group(1)
+        try:
+            # Copy the file
+            shutil.copy(file_path, output_directory)
+            print(f"image file: {file_path} copied to {output_directory}")
+        except FileNotFoundError:
+            print(f"❌ Error: The source file '{file_path}' was not found.")
+        except Exception as e:
+            print(f"❌ An error occurred during copying: {e}")
 
-    try:
-        # Copy the file
-        shutil.copy(file_path, output_directory)
-    except FileNotFoundError:
-        print(f"❌ Error: The source file '{file_path}' was not found.")
-    except Exception as e:
-        print(f"❌ An error occurred during copying: {e}")
-    print(f"The extracted file path is: {file_path}")
+    else:
+        print("Could not find the expected pattern.")
 
-def save_images(output_directory, lines):
-    for line in lines:
-        if "includegraphics" not in line:
-            continue
-        match = re.search(r'\\includegraphics\{(.*?)\}', line)
-        if match:
-            # The captured group (the file path) is at index 1
-            file_path = match.group(1)
-            save_image_file(output_directory, file_path)    
-        else:
-            print("Could not find the expected pattern.")
+
+
 
 
 def _main(base_file, 
@@ -149,7 +158,7 @@ def _main(base_file,
     current_path = os.path.split(base_file)[0]
     g = open(output_file, "w", encoding='utf-8')
     lines = expand_file(base_file, base_file, current_path, include_bbl,
-                        noline, nocomment,no_image_path)
+                        noline, nocomment,no_image_path,output_directory)
     content = ''.join(lines)
     g.write(content)
     g.close()
@@ -160,6 +169,10 @@ if __name__ == "__main__":
     base_file = "/home/atilla/Projects/my-repos/latex-article-template/main.tex"
     output_file = "output.tex"
     output_directory = "/home/atilla/Projects/my-repos/latex-article-template/temp/"
-    _main(base_file,output_file,output_directory)
+    _main(base_file,
+          output_file,
+          output_directory,
+          include_bbl=True,
+          no_image_path=True)
 
 
