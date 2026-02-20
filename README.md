@@ -15,9 +15,18 @@ There are C and perl versions of this, but I wanted a pure python version to fit
 
 To install
 ----------
-    git clone git@github.com:johnjosephhorton/flatex.git
+    git clone git@github.com:ati-ozgur/flatex.git
     cd flatex
     pip install --editable . 
+
+To install MacOS Brew
+----------
+    git clone git@github.com:ati-ozgur/flatex.git
+    cd flatex
+    brew install pipx
+    pipx install --editable .
+
+
 
 To use as a stand-alone script
 -----------------------------
